@@ -15,8 +15,9 @@ import org.apache.commons.jelly.XMLOutput;
 import org.apache.tools.ant.types.DirSet;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.resources.FileResource;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.lib.envinject.EnvInjectException;
-import org.jenkinsci.lib.envinject.service.EnvVarsResolver;
+import org.jenkinsci.plugins.envinjectapi.util.EnvVarsResolver;
 import org.jenkinsci.lib.xtrigger.AbstractTrigger;
 import org.jenkinsci.lib.xtrigger.XTriggerDescriptor;
 import org.jenkinsci.lib.xtrigger.XTriggerException;
@@ -141,10 +142,9 @@ public class FolderContentTrigger extends AbstractTrigger {
     @Override
     protected synchronized boolean checkIfModified(Node pollingNode, final XTriggerLog log) throws XTriggerException {
 
-        EnvVarsResolver varsRetriever = new EnvVarsResolver();
         Map<String, String> envVars;
         try {
-            envVars = varsRetriever.getPollingEnvVars((AbstractProject) job, pollingNode);
+            envVars = EnvVarsResolver.getPollingEnvVars((Job)job, pollingNode);
         } catch (EnvInjectException e) {
             throw new XTriggerException(e);
         }
@@ -368,10 +368,9 @@ public class FolderContentTrigger extends AbstractTrigger {
     @Override
     public void start(Node pollingNode, BuildableItem project, boolean newInstance, XTriggerLog log) {
 
-        EnvVarsResolver varsRetriever = new EnvVarsResolver();
         Map<String, String> envVars = null;
         try {
-            envVars = varsRetriever.getPollingEnvVars((AbstractProject) project, pollingNode);
+            envVars = EnvVarsResolver.getPollingEnvVars((Job)job, pollingNode);
         } catch (EnvInjectException e) {
             //Ignore the exception process, just log it
             LOGGER.log(Level.SEVERE, e.getMessage());
@@ -448,6 +447,7 @@ public class FolderContentTrigger extends AbstractTrigger {
     }
 
     @Extension
+    @Symbol("folderContent")
     @SuppressWarnings("unused")
     public static class FolderContentTriggerDescriptor extends XTriggerDescriptor {
 

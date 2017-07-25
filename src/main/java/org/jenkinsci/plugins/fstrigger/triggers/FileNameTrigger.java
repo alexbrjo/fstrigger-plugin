@@ -18,6 +18,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.jelly.XMLOutput;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.lib.xtrigger.AbstractTrigger;
 import org.jenkinsci.lib.xtrigger.XTriggerDescriptor;
 import org.jenkinsci.lib.xtrigger.XTriggerException;
@@ -26,6 +27,7 @@ import org.jenkinsci.plugins.fstrigger.core.FSTriggerAction;
 import org.jenkinsci.plugins.fstrigger.core.FSTriggerContentFileType;
 import org.jenkinsci.plugins.fstrigger.service.FSTriggerComputeFileService;
 import org.jenkinsci.plugins.fstrigger.service.FSTriggerFileNameCheckedModifiedService;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -54,6 +56,7 @@ public class FileNameTrigger extends AbstractTrigger {
 
     private FileNameTriggerInfo[] fileInfo = new FileNameTriggerInfo[0];
 
+    @DataBoundConstructor
     public FileNameTrigger(String cronTabSpec, FileNameTriggerInfo[] fileInfo) throws ANTLRException {
         super(cronTabSpec);
         this.fileInfo = Arrays.copyOf(fileInfo, fileInfo.length);
@@ -85,7 +88,7 @@ public class FileNameTrigger extends AbstractTrigger {
         try {
             FSTriggerComputeFileService service = new FSTriggerComputeFileService();
             for (FileNameTriggerInfo info : fileInfo) {
-                FilePath resolvedFile = service.computedFile(pollingNode, (AbstractProject) project, info, new XTriggerLog((StreamTaskListener) TaskListener.NULL));
+                FilePath resolvedFile = service.computedFile(pollingNode, (Job)project, info, new XTriggerLog((StreamTaskListener) TaskListener.NULL));
                 if (resolvedFile != null) {
                     info.setResolvedFile(resolvedFile);
                     info.setLastModifications(resolvedFile.lastModified());
@@ -173,7 +176,7 @@ public class FileNameTrigger extends AbstractTrigger {
         FilePath[] resolvedFiles = new FilePath[fileInfo.length];
         for (int i = 0; i < fileInfo.length; i++) {
             FileNameTriggerInfo info = fileInfo[i];
-            FilePath resolvedFile = new FSTriggerComputeFileService().computedFile(pollingNode, (AbstractProject) job, info, log);
+            FilePath resolvedFile = new FSTriggerComputeFileService().computedFile(pollingNode, (Job) job, info, log);
             resolvedFiles[i] = resolvedFile;
         }
         return resolvedFiles;
@@ -325,6 +328,7 @@ public class FileNameTrigger extends AbstractTrigger {
     }
 
     @Extension
+    @Symbol("fileName")
     @SuppressWarnings("unused")
     public static class FileNameTriggerDescriptor extends XTriggerDescriptor {
 
